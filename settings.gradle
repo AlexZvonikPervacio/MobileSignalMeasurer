@@ -1,0 +1,1 @@
+include ':app', ':mobile_signal_strength_measurer', ':connection_rate_tester'

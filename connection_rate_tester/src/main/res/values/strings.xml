@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">WifiSignalStrength</string>
+    <string name="no_internet_connection">No internet connection. Please, turn it on</string>
+    <string name="wifi_not_connected">WiFi is not connected. Please, retry</string>
+    <string name="mobile_internet_not_connected">Mobile internet is not connected. Please, retry</string>
+    <string name="default_error_message">Cannot connect to server. Please, retry</string>
+    <string name="measurement_started">%1$s rate measurement started</string>
+    <string name="rate_message">%1$s rate is rate : %2$f</string>
+</resources>
