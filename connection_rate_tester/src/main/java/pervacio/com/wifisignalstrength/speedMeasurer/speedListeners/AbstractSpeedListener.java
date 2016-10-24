@@ -32,9 +32,9 @@ public abstract class AbstractSpeedListener implements
     private ISpeedListenerFinishCallback mOnFinish;
     private StopWaiter mStopWaiter;
 
-    protected AbstractSpeedListener(SpeedListenerHandler handler, ISpeedListenerFinishCallback mOnFinish) {
-        this.mHandler = handler;
-        this.mOnFinish = mOnFinish;
+    protected AbstractSpeedListener(SpeedListenerHandler handler, ISpeedListenerFinishCallback onFinish) {
+        mHandler = handler;
+        mOnFinish = onFinish;
         mList = new ArrayList<>();
         mStopWaiter = new StopWaiter(this);
     }
@@ -113,7 +113,7 @@ public abstract class AbstractSpeedListener implements
             }
         }
         if (mOnFinish != null) {
-            mOnFinish.onSpeedListenerFinish(this);
+            mOnFinish.onSpeedListenerFinish();
         }
     }
 

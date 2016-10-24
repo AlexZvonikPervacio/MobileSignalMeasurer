@@ -17,8 +17,6 @@ import pervacio.com.wifisignalstrength.R;
 import pervacio.com.wifisignalstrength.speedMeasurer.speedListeners.AbstractSpeedListener;
 import pervacio.com.wifisignalstrength.utils.CommonUtils;
 
-import static pervacio.com.wifisignalstrength.utils.CommonUtils.MOBILE;
-import static pervacio.com.wifisignalstrength.utils.CommonUtils.WIFI;
 import static pervacio.com.wifisignalstrength.utils.Constants.ERROR;
 import static pervacio.com.wifisignalstrength.utils.Constants.FINISH;
 import static pervacio.com.wifisignalstrength.utils.Constants.PROGRESS;
@@ -36,19 +34,24 @@ public abstract class DefaultHandlerCallback implements Handler.Callback {
     private String mTaskName;
     private Context mContext;
     @TargetConnectionType
-    private int mConnectionType;
+    private final int mConnectionType;
 
     public DefaultHandlerCallback(ViewSet viewSet, String taskName, @TargetConnectionType int connectionType) {
-        this(viewSet, taskName);
-        mConnectionType = connectionType;
-    }
-
-    private DefaultHandlerCallback(ViewSet viewSet, String taskName) {
         mContext = viewSet.mProgressBar.getContext();
         mProgressBar = viewSet.mProgressBar;
         mRateText = viewSet.mRateText;
         mRestartButton = viewSet.mRestartButton;
         mTaskName = taskName;
+        mConnectionType = connectionType;
+    }
+
+    @TargetConnectionType
+    public int getConnectionType() {
+        return mConnectionType;
+    }
+
+    public Context getContext() {
+        return mContext;
     }
 
     @Override
@@ -72,13 +75,10 @@ public abstract class DefaultHandlerCallback implements Handler.Callback {
                 break;
             case ERROR:
                 int messageResId;
-                if (!CommonUtils.hasInternetAccess(mContext)) {
-                    messageResId = R.string.no_internet_connection;
-                } else if (WIFI == mConnectionType && CommonUtils.typeConnection(mContext) != WIFI) {
-                    messageResId = R.string.wifi_not_connected;
-                } else if (MOBILE == mConnectionType && CommonUtils.typeConnection(mContext) != MOBILE) {
-                    messageResId = R.string.mobile_internet_not_connected;
-                } else {
+                Integer resId = (Integer) message.obj;
+                if (resId != null){
+                    messageResId = resId;
+                }else {
                     messageResId = R.string.default_error_message;
                 }
                 mRateText.setText(messageResId);

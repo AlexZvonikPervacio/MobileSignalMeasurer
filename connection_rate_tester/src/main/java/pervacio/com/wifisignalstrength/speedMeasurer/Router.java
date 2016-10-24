@@ -8,8 +8,13 @@ import java.util.List;
 
 import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.model.UploadStorageType;
+import pervacio.com.wifisignalstrength.R;
 import pervacio.com.wifisignalstrength.speedMeasurer.actions.WorkerTask;
-import pervacio.com.wifisignalstrength.speedMeasurer.speedListeners.AbstractSpeedListener;
+import pervacio.com.wifisignalstrength.utils.CommonUtils;
+import pervacio.com.wifisignalstrength.utils.Constants;
+
+import static pervacio.com.wifisignalstrength.speedMeasurer.DefaultHandlerCallback.MOBILE;
+import static pervacio.com.wifisignalstrength.speedMeasurer.DefaultHandlerCallback.WIFI;
 
 /**
  * The type Router used to configure one by one execution listening callbacks.
@@ -36,11 +41,9 @@ public class Router implements ISpeedListenerFinishCallback {
 
     /**
      * Calls when task finishes
-     *
-     * @param speedListener callback listener
      */
     @Override
-    public void onSpeedListenerFinish(AbstractSpeedListener speedListener) {
+    public void onSpeedListenerFinish() {
         Log.w("Router", "onSpeedListenerFinish");
         if (mListenerAndHandlers.size() == mSerialNumber) {
             if (mLastListenerFinished != null) {
@@ -74,10 +77,24 @@ public class Router implements ISpeedListenerFinishCallback {
             TaskAndHandlerWrapper listenerAndHandler = mListenerAndHandlers.get(serialNumber);
 
             WorkerTask mWorkerTask = listenerAndHandler.mWorkerTask;
-            Handler.Callback mCallback = listenerAndHandler.mCallback;
+//            Handler.Callback mCallback = listenerAndHandler.mCallback;
+            DefaultHandlerCallback mCallback = (DefaultHandlerCallback) listenerAndHandler.mCallback;
             SpeedListenerHandler handler = new SpeedListenerHandler(mCallback);
-
-            mWorkerTask.execute(mSpeedTestSocket, handler, this);
+            //////////////////////////////////////////
+            Integer messageResId = null;
+            if (!CommonUtils.hasInternetAccess(mCallback.getContext())) {
+                messageResId = R.string.no_internet_connection;
+            } else if (WIFI == mCallback.getConnectionType() && CommonUtils.typeConnection(mCallback.getContext()) != WIFI) {
+                messageResId = R.string.wifi_not_connected;
+            } else if (MOBILE == mCallback.getConnectionType() && CommonUtils.typeConnection(mCallback.getContext()) != MOBILE) {
+                messageResId = R.string.mobile_internet_not_connected;
+            }
+            if (messageResId != null) {
+                handler.publish(Constants.ERROR, messageResId);
+                onSpeedListenerFinish();
+            } else {
+                mWorkerTask.execute(mSpeedTestSocket, handler, this);
+            }
         }
     }
 
