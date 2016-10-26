@@ -1,1 +1,1 @@
-include ':app', ':mobile_signal_strength_measurer', ':connection_rate_tester'
+include ':app', ':mobile_signal_strength_measurer', ':connection_rate_tester', ':custom_connection_measurer'
