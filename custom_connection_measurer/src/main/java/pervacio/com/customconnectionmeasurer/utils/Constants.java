@@ -23,12 +23,14 @@ public class Constants {
     public static final String UPLOAD_FILE_SUF = "dat";
     public static final String UPLOAD_FILE_NAME = UPLOAD_FILE_PREF + "." + UPLOAD_FILE_SUF;
 
-
     public static final String CHARSET = "UTF-8";
+
+    public static final int DEFAULT_MEASUREMENT_DURATION = 10_000;
+    public static final int DEFAULT_UPDATE_PERIOD = 500;
+    public static final int MIN_UPDATE_PERIOD = 100;
 
     public static final int ACTION_START = 8000;
     public static final int ACTION_STOP = 8001;
-    public static final int DEFAULT_MEASUREMENT_DURATION = 10_000;
 
     @IntDef({ACTION_START, ACTION_STOP})
     @Retention(RetentionPolicy.SOURCE)

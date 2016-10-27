@@ -1,6 +1,7 @@
 package pervacio.com.customconnectionmeasurer;
 
 import android.content.Context;
+import android.support.annotation.IntRange;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -34,14 +35,16 @@ public class TestRouter {
     @Constants.NetworkType
     private int mNetworkType;
     private int mDuration;
+    private int mUpdatePeriod;
     private MeasuringUnits mMeasuringUnit;
     private SparseArray<TaskCallbacks> mCallbackMap;
     private List<AbstractCancelableTask> mPrevTasks;
 
-    private TestRouter(@Constants.NetworkType int networkType, int duration, MeasuringUnits measuringUnit,
-                       SparseArray<TaskCallbacks> callbackMap, Context context) {
+    private TestRouter(@Constants.NetworkType int networkType, int duration, int updatePeriod,
+                       MeasuringUnits measuringUnit, SparseArray<TaskCallbacks> callbackMap, Context context) {
         mNetworkType = networkType;
         mDuration = duration;
+        mUpdatePeriod = updatePeriod;
         mMeasuringUnit = measuringUnit;
         mCallbackMap = callbackMap;
         mContext = context;
@@ -52,7 +55,7 @@ public class TestRouter {
         executeAndClear(mDuration);
     }
 
-    public void start(long maxDuration) {
+    public void start(int maxDuration) {
         executeAndClear(maxDuration);
     }
 
@@ -62,7 +65,7 @@ public class TestRouter {
         executeAndClear(mDuration);
     }
 
-    public void addTaskAndStart(@Constants.MeasureTaskType int type, TaskCallbacks callbacks, long maxDuration) {
+    public void addTaskAndStart(@Constants.MeasureTaskType int type, TaskCallbacks callbacks, int maxDuration) {
         mCallbackMap.append(type, callbacks);
         executeAndClear(maxDuration);
     }
@@ -71,7 +74,7 @@ public class TestRouter {
         mCallbackMap.append(type, callbacks);
     }
 
-    private void executeAndClear(final long maxDuration) {
+    private void executeAndClear(final int maxDuration) {
         if (mCallbackMap.size() == 0) {
             throw new RuntimeException("No actions to execute");
         }
@@ -91,15 +94,15 @@ public class TestRouter {
             int key = mCallbackMap.keyAt(i);
             switch (key) {
                 case DOWNLOAD:
-                    prevTask = new DownloadTask(DOWNLOAD_URL, maxDuration, mMeasuringUnit,
-                            connectionChecker, mCallbackMap.get(key));
+                    prevTask = new DownloadTask(DOWNLOAD_URL, maxDuration, mUpdatePeriod,
+                            mMeasuringUnit, connectionChecker, mCallbackMap.get(key));
 
                     lastTaskFuture = mExecutor.submit(prevTask.getCallable());
                     mPrevTasks.add(prevTask);
                     break;
                 case UPLOAD:
-                    prevTask = new UploadTask(UPLOAD_URL, CHARSET, maxDuration, mMeasuringUnit,
-                            connectionChecker, mCallbackMap.get(key));
+                    prevTask = new UploadTask(UPLOAD_URL, CHARSET, maxDuration, mUpdatePeriod,
+                            mMeasuringUnit, connectionChecker, mCallbackMap.get(key));
                     mPrevTasks.add(prevTask);
                     lastTaskFuture = mExecutor.submit(prevTask.getCallable());
                     break;
@@ -115,7 +118,7 @@ public class TestRouter {
         }
     }
 
-    private void waitForLastTaskCompleted(long maxDuration, Future<Float> lastFuture, LifeCycleCallback lastCallback) {
+    private void waitForLastTaskCompleted(int maxDuration, Future<Float> lastFuture, LifeCycleCallback lastCallback) {
         new FutureWaiter(maxDuration * mCallbackMap.size(), lastFuture, lastCallback).start();
     }
 
@@ -137,6 +140,7 @@ public class TestRouter {
         @Constants.NetworkType
         private int mNetworkType;
         private int mDuration;
+        private int mUpdatePeriod;
         private MeasuringUnits mMeasuringUnit;
         private SparseArray<TaskCallbacks> mCallbackMap;
         private Context mContext;
@@ -145,6 +149,7 @@ public class TestRouter {
             mContext = context;
             mNetworkType = Constants.WIFI;
             mDuration = Constants.DEFAULT_MEASUREMENT_DURATION;
+            mUpdatePeriod = Constants.DEFAULT_UPDATE_PERIOD;
             mMeasuringUnit = MeasuringUnits.MB_S;
             mCallbackMap = new SparseArray<>(2);
         }
@@ -156,6 +161,11 @@ public class TestRouter {
 
         public Builder setDuration(int duration) {
             mDuration = duration;
+            return this;
+        }
+
+        public Builder setUpdatePeriod(@IntRange(from = Constants.MIN_UPDATE_PERIOD) int updatePeriod) {
+            mUpdatePeriod = updatePeriod > Constants.MIN_UPDATE_PERIOD ? updatePeriod : Constants.DEFAULT_UPDATE_PERIOD;
             return this;
         }
 
@@ -175,7 +185,7 @@ public class TestRouter {
         }
 
         public TestRouter create() {
-            return new TestRouter(mNetworkType, mDuration, mMeasuringUnit, mCallbackMap, mContext);
+            return new TestRouter(mNetworkType, mDuration, mUpdatePeriod, mMeasuringUnit, mCallbackMap, mContext);
         }
 
     }

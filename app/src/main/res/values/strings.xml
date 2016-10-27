@@ -2,4 +2,6 @@
     <string name="app_name">MobileSignalMeasurer</string>
     <string name="on_request_string">Signal Strength : %1$dasu or %2$ddBm</string>
     <string name="real_time_string">Signal Strength : %1$dasu %2$s</string>
+    <string name="measurement_started">%1$s rate measurement started</string>
+    <string name="rate_message">%1$s rate is rate : %2$f%3$s</string>
 </resources>

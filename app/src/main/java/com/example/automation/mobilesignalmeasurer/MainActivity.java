@@ -41,15 +41,15 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         initViews();
         setOnclickListeners();
 
         mPhoneStateListener = new PhoneSignalStateListener(this, this);
 
         mTestRouter = new TestRouter.Builder(this)
-                .setNetworkType(Constants.WIFI)
+                .setNetworkType(Constants.MOBILE)
                 .setDuration(5_000)
+                .setUpdatePeriod(250)
                 .setMeasuringUnit(unit)
                 .setDownload(this)
                 .setUpload(this)
@@ -94,10 +94,10 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.restart_download:
-                mTestRouter.addTaskAndStart(pervacio.com.customconnectionmeasurer.utils.Constants.DOWNLOAD, this);
+                mTestRouter.addTaskAndStart(Constants.DOWNLOAD, this);
                 break;
             case R.id.restart_upload:
-                mTestRouter.addTaskAndStart(pervacio.com.customconnectionmeasurer.utils.Constants.UPLOAD, this);
+                mTestRouter.addTaskAndStart(Constants.UPLOAD, this);
                 break;
             case R.id.signal_strength_on_request:
                 mOnRequestMeasurer.setText(getString(R.string.on_request_string, mPhoneStateListener.getAsu(), mPhoneStateListener.getDbm()));
@@ -139,13 +139,13 @@ public class MainActivity extends AppCompatActivity implements
         Log.w(TAG, "[onDownloadStart]");
         mWifiDownloadSpeedProgress.setVisibility(View.VISIBLE);
         restartDownload.setVisibility(View.GONE);
-        downloadRate.setText(getString(pervacio.com.wifisignalstrength.R.string.measurement_started, "Download"));
+        downloadRate.setText(getString(R.string.measurement_started, "Download"));
     }
 
     @Override
     public void onDownloadProgress(float progress) {
         Log.w(TAG, "[onDownloadProgress] : progress = " + progress);
-        downloadRate.setText(getString(pervacio.com.wifisignalstrength.R.string.rate_message, "Download", progress, unit.getLabel()));
+        downloadRate.setText(getString(R.string.rate_message, "Download", progress, unit.getLabel()));
     }
 
     @Override
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements
         mWifiDownloadSpeedProgress.setVisibility(View.INVISIBLE);
         mWifiDownloadSpeedProgress.setIndeterminate(false);
         restartDownload.setVisibility(View.VISIBLE);
-        downloadRate.setText(getString(pervacio.com.wifisignalstrength.R.string.rate_message, "Download", result, unit.getLabel()));
+        downloadRate.setText(getString(R.string.rate_message, "Download", result, unit.getLabel()));
     }
 
     @Override
@@ -171,19 +171,19 @@ public class MainActivity extends AppCompatActivity implements
         Log.w(TAG, "[onUploadStart]");
         mWifiUploadSpeedProgress.setVisibility(View.VISIBLE);
         restartUpload.setVisibility(View.GONE);
-        uploadRate.setText(getString(pervacio.com.wifisignalstrength.R.string.measurement_started, "Upload"));
+        uploadRate.setText(getString(R.string.measurement_started, "Upload"));
     }
 
     @Override
     public void onUploadProgress(float progress) {
         Log.w(TAG, "[onUploadProgress] : progress = " + progress);
-        uploadRate.setText(getString(pervacio.com.wifisignalstrength.R.string.rate_message, "Upload", progress, unit.getLabel()));
+        uploadRate.setText(getString(R.string.rate_message, "Upload", progress, unit.getLabel()));
     }
 
     @Override
     public void onUploadFinish(float result) {
         Log.w(TAG, "[onUploadFinish] : result = " + result + " " + unit.getLabel());
-        uploadRate.setText(getString(pervacio.com.wifisignalstrength.R.string.rate_message, "Upload", result, unit.getLabel()));
+        uploadRate.setText(getString(R.string.rate_message, "Upload", result, unit.getLabel()));
         mWifiUploadSpeedProgress.setVisibility(View.INVISIBLE);
         mWifiUploadSpeedProgress.setIndeterminate(false);
         restartUpload.setVisibility(View.VISIBLE);

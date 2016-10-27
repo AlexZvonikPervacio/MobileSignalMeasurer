@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "25.0.0"
+    buildToolsVersion "24.0.3"
 
     defaultConfig {
         applicationId "com.example.automation.mobilesignalmeasurer"
         minSdkVersion 9
-        targetSdkVersion 24
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -28,6 +28,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
     compile project(path: ':mobile_signal_strength_measurer')
-    compile project(path: ':connection_rate_tester')
     compile project(path: ':custom_connection_measurer')
 }

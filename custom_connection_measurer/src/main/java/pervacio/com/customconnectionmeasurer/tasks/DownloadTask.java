@@ -24,9 +24,9 @@ public class DownloadTask extends AbstractCancelableTask {
     private String mUrl;
     private DownloadCallback mDownloadCallback;
 
-    public DownloadTask(String url, long duration, MeasuringUnits measuringUnit,
+    public DownloadTask(String url, long duration, int updatePeriod, MeasuringUnits measuringUnit,
                         IConnectionTypeChecker checker, TaskCallbacks taskCallback) {
-        super(duration, measuringUnit, checker);
+        super(duration, updatePeriod, measuringUnit, checker);
         mUrl = url;
         mDownloadCallback = taskCallback;
     }

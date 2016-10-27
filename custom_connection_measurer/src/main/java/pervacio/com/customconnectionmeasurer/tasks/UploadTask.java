@@ -49,9 +49,9 @@ public class UploadTask extends AbstractCancelableTask {
      * @param duration
      * @throws IOException
      */
-    public UploadTask(String requestURL, String charset, long duration, MeasuringUnits measuringUnit,
-                      IConnectionTypeChecker checker, TaskCallbacks taskCallback) {
-        super(duration, measuringUnit, checker);
+    public UploadTask(String requestURL, String charset, int duration, int updatePeriod,
+                      MeasuringUnits measuringUnit, IConnectionTypeChecker checker, TaskCallbacks taskCallback) {
+        super(duration, updatePeriod, measuringUnit, checker);
         this.requestURL = requestURL;
         this.charset = charset;
         mUploadTaskCallback = taskCallback;
@@ -113,7 +113,6 @@ public class UploadTask extends AbstractCancelableTask {
             response = finish();
             Log.d("UploadTask", "response : " + response);
         } catch (IOException e) {
-
             onError(e.getMessage());
         }
 //        return TextUtils.join("\n", response);

@@ -9,7 +9,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/connection_rate_tester" />
             <option value="$PROJECT_DIR$/custom_connection_measurer" />
             <option value="$PROJECT_DIR$/mobile_signal_strength_measurer" />
           </set>

@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MobileSignalMeasurer.iml" filepath="$PROJECT_DIR$/MobileSignalMeasurer.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/connection_rate_tester/connection_rate_tester.iml" filepath="$PROJECT_DIR$/connection_rate_tester/connection_rate_tester.iml" />
       <module fileurl="file://$PROJECT_DIR$/custom_connection_measurer/custom_connection_measurer.iml" filepath="$PROJECT_DIR$/custom_connection_measurer/custom_connection_measurer.iml" />
       <module fileurl="file://$PROJECT_DIR$/mobile_signal_strength_measurer/mobile_signal_strength_measurer.iml" filepath="$PROJECT_DIR$/mobile_signal_strength_measurer/mobile_signal_strength_measurer.iml" />
     </modules>

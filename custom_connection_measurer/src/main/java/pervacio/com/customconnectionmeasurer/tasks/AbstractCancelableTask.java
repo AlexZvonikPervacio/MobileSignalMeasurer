@@ -1,5 +1,7 @@
 package pervacio.com.customconnectionmeasurer.tasks;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.support.annotation.CheckResult;
 import android.util.Log;
@@ -7,6 +9,10 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,15 +29,20 @@ public abstract class AbstractCancelableTask {
     private final AtomicBoolean mCancelled = new AtomicBoolean();
 
     private long mDuration;
+    private int mUpdatePeriod;
     private MeasuringUnits mMeasuringUnit;
     private IConnectionTypeChecker mChecker;
     //TODO get rid of or change architecture
 //    private LifeCycleCallback mLifeCycleCallback;
+    protected Handler mUiHandler;
 
-    public AbstractCancelableTask(long duration, MeasuringUnits measuringUnit, IConnectionTypeChecker checker) {
+    public AbstractCancelableTask(long duration, int updatePeriod, MeasuringUnits measuringUnit,
+                                  IConnectionTypeChecker checker) {
         mDuration = duration;
+        mUpdatePeriod = updatePeriod;
         mMeasuringUnit = measuringUnit;
         mChecker = checker;
+        mUiHandler = new Handler(Looper.getMainLooper());
     }
 
     public final boolean isCancelled() {
@@ -44,9 +55,14 @@ public abstract class AbstractCancelableTask {
 
     public float startAction() {
         initBeforeStart();
-        String message = mChecker.check();
+        final String message = mChecker.check();
         if (message != null) {
-            onError(message);
+            mUiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    onError(message);
+                }
+            });
             cancel();
             return 0f;
         }
@@ -57,15 +73,29 @@ public abstract class AbstractCancelableTask {
                 mCancelled.set(true);
             }
         }).start();
-        onStart();
-        float result = 0f;
+        mUiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                onStart();
+            }
+        });
         try {
-            result = performAction();
-            onFinish(result);
-        } catch (TaskException e) {
-            onError(e.getmMessage());
+            final float result = performAction();
+            mUiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    onFinish(result);
+                }
+            });
+        } catch (final TaskException e) {
+            mUiHandler.post(new Runnable() {
+                @Override
+                public void run() {onError(e.getmMessage());
+
+                }
+            });
         }
-        return result;
+        return 0f;
     }
 
     @CheckResult
@@ -74,6 +104,25 @@ public abstract class AbstractCancelableTask {
         long totalBytes = 0;
         byte[] buffer = new byte[CHUNK_SIZE];
         long startTime = System.currentTimeMillis();
+        //////////////////////////////////////////////////
+        final long period = 300;
+        //////////////////////////////////////////////////
+        Timer timer = new Timer(true);
+        AAA timerTask = new AAA((int) (mDuration / period)) {
+            @Override
+            public void run() {
+                float convertBytes = mMeasuringUnit.convertBytes(mLoadedBytes, period);
+                mPrevResults.add(convertBytes);
+                mUiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        onProgress(getMean());
+                    }
+                });
+                mLoadedBytes = 0;
+            }
+        };
+        timer.schedule(timerTask, period, period);
 
         try {
             int bytesRead;
@@ -81,16 +130,20 @@ public abstract class AbstractCancelableTask {
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 if (isCancelled()) {
                     inputStream.close();
+                    timerTask.cancel();
+                    timer.cancel();
+                    timer.purge();
                     final float rate = mMeasuringUnit.convertBytes(totalBytes, System.currentTimeMillis() - startTime);
                     Log.e("readBytes", "rate = " + rate + ", totalBytes = " + totalBytes);
                     return rate;
                 }
                 totalBytes += bytesRead;
+                timerTask.addBytes(bytesRead);
                 outputStream.write(buffer, 0, bytesRead);
-                if (counter % 50 == 0) {
-                    onProgress(totalBytes);
-                }
-                counter++;
+//                if (counter % 50 == 0) {
+//                    onProgress(totalBytes);
+//                }
+//                counter++;
             }
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
@@ -105,11 +158,48 @@ public abstract class AbstractCancelableTask {
                     inputStream.close();
                 }
             } catch (IOException ignored) {
+                Log.e("readBytes", "ignored = " + ignored.getMessage());
             }
+            timerTask.cancel();
+            timer.cancel();
+            timer.purge();
         }
         final float rate = mMeasuringUnit.convertBytes(totalBytes, System.currentTimeMillis() - startTime);
         Log.e("readBytes", "rate = " + rate + ", totalBytes = " + totalBytes);
         return rate;
+    }
+
+    static abstract class AAA extends TimerTask {
+
+        /* volatile*/ long mAverage;
+        /* volatile*/ long mLoadedBytes;
+        private int mArraySize;
+        protected List<Float> mPrevResults;
+
+        public AAA(int arraySize) {
+            mArraySize = arraySize;
+            mPrevResults = new ArrayList<>(mArraySize);
+        }
+
+        public void addBytes(long bytes) {
+            mLoadedBytes += bytes;
+        }
+
+        public float getMean() {
+            if (mPrevResults.size() == 0) {
+                return Float.NaN;
+            }
+            return sum(mPrevResults) / mPrevResults.size();
+        }
+
+        private static float sum(List<Float> floats) {
+            float sum = 0.0f;
+            for (Float aFloat : floats) {
+                sum += aFloat;
+            }
+            return sum;
+        }
+
     }
 
     protected void initBeforeStart() {
