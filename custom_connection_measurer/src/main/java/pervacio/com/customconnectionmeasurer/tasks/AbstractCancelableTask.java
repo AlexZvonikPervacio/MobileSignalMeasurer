@@ -104,14 +104,11 @@ public abstract class AbstractCancelableTask {
         long totalBytes = 0;
         byte[] buffer = new byte[CHUNK_SIZE];
         long startTime = System.currentTimeMillis();
-        //////////////////////////////////////////////////
-        final long period = 300;
-        //////////////////////////////////////////////////
         Timer timer = new Timer(true);
-        AAA timerTask = new AAA((int) (mDuration / period)) {
+        AAA timerTask = new AAA((int) (mDuration / mUpdatePeriod)) {
             @Override
             public void run() {
-                float convertBytes = mMeasuringUnit.convertBytes(mLoadedBytes, period);
+                float convertBytes = mMeasuringUnit.convertBytes(mLoadedBytes, mUpdatePeriod);
                 mPrevResults.add(convertBytes);
                 mUiHandler.post(new Runnable() {
                     @Override
@@ -122,11 +119,10 @@ public abstract class AbstractCancelableTask {
                 mLoadedBytes = 0;
             }
         };
-        timer.schedule(timerTask, period, period);
+        timer.schedule(timerTask, mUpdatePeriod, mUpdatePeriod);
 
         try {
             int bytesRead;
-            int counter = 0;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 if (isCancelled()) {
                     inputStream.close();
@@ -140,10 +136,6 @@ public abstract class AbstractCancelableTask {
                 totalBytes += bytesRead;
                 timerTask.addBytes(bytesRead);
                 outputStream.write(buffer, 0, bytesRead);
-//                if (counter % 50 == 0) {
-//                    onProgress(totalBytes);
-//                }
-//                counter++;
             }
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
@@ -171,8 +163,7 @@ public abstract class AbstractCancelableTask {
 
     static abstract class AAA extends TimerTask {
 
-        /* volatile*/ long mAverage;
-        /* volatile*/ long mLoadedBytes;
+        long mLoadedBytes;
         private int mArraySize;
         protected List<Float> mPrevResults;
 
