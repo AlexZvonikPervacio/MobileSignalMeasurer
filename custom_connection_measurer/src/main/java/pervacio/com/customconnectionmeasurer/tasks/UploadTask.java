@@ -64,12 +64,17 @@ public class UploadTask extends AbstractCancelableTask {
         if (!FileUtils.isUploadFileExist() || !FileUtils.isUploadFileHasValidSize()) {
             try {
                 RandomGen.generateRandomFile(Constants.UPLOAD_FILE_SIZE);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 //TODO delay with that case
                 Log.w("mUploadTaskCallback", "initBeforeStart:  " + e.getMessage());
-                if (mUploadTaskCallback != null) {
-                    mUploadTaskCallback.onUploadError(e.getMessage());
-                }
+                mUiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mUploadTaskCallback != null) {
+                            mUploadTaskCallback.onUploadError(e.getMessage());
+                        }
+                    }
+                });
             }
         }
     }
